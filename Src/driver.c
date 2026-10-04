@@ -1721,6 +1721,27 @@ void setPeriphPinDescription (const pin_function_t function, const pin_group_t g
     } while(ppin);
 }
 
+#ifdef ROM_BOOTLOADER_JUMP
+
+// $BOOT: restart into the chip's ROM serial bootloader for a firmware update over the
+// same UART (see the magic check at the top of SystemInit()).
+static status_code_t boot_rom_bootloader (sys_state_t state, char *args)
+{
+    extern uint32_t _boot_magic;
+    volatile uint32_t *magic = &_boot_magic;
+
+    report_message("Restarting in ROM bootloader mode", Message_Warning);
+    hal.delay_ms(100, NULL);
+
+    magic[0] = 0xB007B007U;
+    magic[1] = ~0xB007B007U;
+    NVIC_SystemReset();
+
+    return Status_OK;
+}
+
+#endif
+
 static status_code_t jtag_enable (sys_state_t state, char *args)
 {
     report_message("Reenabled JTAG/SWD", Message_Warning);
@@ -2051,6 +2072,9 @@ bool driver_init (void)
 
     static const sys_command_t boot_command_list[] = {
         {"PGM", jtag_enable, { .allow_blocking = On, .noargs = On }, { .str = "reenable JTAG/SWD" } },
+#ifdef ROM_BOOTLOADER_JUMP
+        {"BOOT", boot_rom_bootloader, { .allow_blocking = On, .noargs = On }, { .str = "restart in ROM bootloader mode (firmware update over UART)" } },
+#endif
     };
 
     static sys_commands_t boot_commands = {
