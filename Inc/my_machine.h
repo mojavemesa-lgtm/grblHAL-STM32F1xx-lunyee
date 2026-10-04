@@ -29,6 +29,7 @@
 //#define BOARD_SVM
 //#define BOARD_CREALITY_V4_2_2 // Not tested!
 //#define BOARD_CREALITY_V4_2_7 // Not tested!
+//#define BOARD_LUNYEE_3AXIS    // Lunyee/ANNOY TOOLS LY-3axis-5.2-V3.4 (GD32F303CCT6), STM32F103RC build, UART
 //#define BOARD_MY_MACHINE // Add my_machine_map.h before enabling this!
 
 // Configuration

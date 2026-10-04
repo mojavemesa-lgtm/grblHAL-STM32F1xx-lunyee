@@ -175,6 +175,27 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
   */
 void SystemInit (void)
 {
+#ifdef ROM_BOOTLOADER_JUMP
+  /* $BOOT support: the application writes a magic pair above the stack and does a
+     system reset; we land here with every peripheral in reset state and jump into the
+     chip's ROM bootloader (USART1 PA9/PA10 etc.). The magic is cleared first, so if the
+     jump fails a power cycle boots the application normally. The system memory address
+     differs between a GD32F30x (0x1FFFB000) and an STM32F1 (0x1FFFF000): pick the one
+     holding a plausible initial stack pointer and reset vector. */
+  extern uint32_t _boot_magic;
+  volatile uint32_t *magic = &_boot_magic;
+  if(magic[0] == 0xB007B007U && magic[1] == ~0xB007B007U) {
+    magic[0] = magic[1] = 0;
+    static const uint32_t sysmem[] = { 0x1FFFB000U, 0x1FFFF000U };
+    for(uint32_t i = 0; i < sizeof(sysmem) / sizeof(sysmem[0]); i++) {
+      uint32_t sp = *(volatile uint32_t *)sysmem[i], pc = *(volatile uint32_t *)(sysmem[i] + 4);
+      if(sp >= 0x20000000U && sp <= 0x20018000U && (pc & 1) && pc >= 0x1FFF0000U && pc < 0x20000000U) {
+        __set_MSP(sp);
+        ((void (*)(void))pc)();
+      }
+    }
+  }
+#endif
   /* Reset the RCC clock configuration to the default reset state(for debug purpose) */
   /* Set HSION bit */
   RCC->CR |= 0x00000001U;

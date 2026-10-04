@@ -118,6 +118,8 @@
   #include "boards/supergerbil_map.h"
 #elif defined(BOARD_CREALITY_V4_2_2) || defined(BOARD_CREALITY_V4_2_7)
   #include "boards/creality_v4.2.x_map.h"
+#elif defined(BOARD_LUNYEE_3AXIS)
+  #include "boards/lunyee_3axis_map.h"
 #elif defined(BOARD_MY_MACHINE)
   #include "boards/my_machine_map.h"
 #else // default board
